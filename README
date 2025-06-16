@@ -1,6 +1,6 @@
 # Weather Application with Web Interface
 
-A robust weather application that retrieves current weather information using multiple weather APIs with automatic fallback.
+A weather application that retrieves current weather information using multiple weather APIs with automatic fallback using Llama 3 to get recommendations on different things to do.
 
 ## Features
 
@@ -17,6 +17,14 @@ A robust weather application that retrieves current weather information using mu
 - Python 3.8+
 - AccuWeather API key (get one from [AccuWeather Developer Portal](https://developer.accuweather.com/))
 - OpenWeatherMap API key (get one from [OpenWeatherMap](https://openweathermap.org/api))
+- Llama 3
+
+## Running llama 3 in your computer
+
+- ``` ollama server
+  ollama run llama3
+  ```
+
 
 ## Installation
 
