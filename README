@@ -1,14 +1,71 @@
-This is a test to learn how to create a mcp server.
+# Weather Application with Web Interface
 
-To use this, you need to use llama3.
+A simple weather application that provides current weather information for any city using the AccuWeather API.
 
-You need to have an api key for accuweather and a .env file with the following variables:
+## Features
 
-ACCUWEATHER_API_KEY
+- Get current weather conditions for any city
+- Responsive web interface
+- Real-time weather updates
+- Displays temperature, feels-like temperature, humidity, and wind speed
 
-You can get an api key for accuweather at https://developer.accuweather.com/ 
+## Prerequisites
 
-To run the server, you need to run the following command:
+- Python 3.8 or higher
+- AccuWeather API key (get it from https://developer.accuweather.com/)
 
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/mcp-weather.git
+   cd mcp-weather
+   ```
+
+2. Create a virtual environment and activate it:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   ```
+
+3. Install the required packages:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Create a `.env` file in the root directory and add your AccuWeather API key:
+   ```
+   ACCUWEATHER_API_KEY=your_api_key_here
+   ```
+
+## Running the Application
+
+### Web Interface (Recommended)
+1. Start the Flask development server:
+   ```bash
+   python app.py
+   ```
+
+2. Open your web browser and navigate to:
+   ```
+   http://127.0.0.1:5000
+   ```
+
+3. Enter a city name in the search box and click "Search" to see the current weather.
+
+### Command Line Interface
+You can also use the command line interface:
+```bash
 python main.py
+```
+
+## Usage
+
+- Enter any city name in the search box
+- Click the "Search" button or press Enter
+- View the current weather conditions including temperature, feels-like temperature, humidity, and wind speed
+
+## License
+
+This project is licensed under the terms of the MIT license. See the [LICENSE](LICENSE) file for details.
 
