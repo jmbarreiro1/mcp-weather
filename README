@@ -22,7 +22,7 @@ A robust weather application that retrieves current weather information using mu
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/mcp-weather.git
+   git clone https://github.com/jmbarreiro1/mcp-weather.git
    cd mcp-weather
    ```
 

@@ -137,16 +137,27 @@ def get_location_key(city: str) -> Optional[str]:
     
     return None
 
-def get_weather_accuweather(city: str, language: str = 'en') -> Tuple[bool, str]:
-    """Get weather from AccuWeather API."""
+def get_weather_accuweather(city: str, language: str = 'en') -> Tuple[bool, dict]:
+    """
+    Get weather from AccuWeather API.
+    
+    Returns:
+        tuple: (success: bool, result: dict) where result contains weather data or error message
+    """
     try:
         if not ACCUWEATHER_API_KEY or ACCUWEATHER_API_KEY == 'your_api_key_here':
-            return False, "AccuWeather API key not configured"
+            return False, {
+                'error': 'AccuWeather API key not configured',
+                'type': 'config_error'
+            }
             
         # Get location key
         location_key = get_location_key(city)
         if not location_key:
-            return False, f"Location not found: {city}"
+            return False, {
+                'error': f'Location not found: {city}',
+                'type': 'location_error'
+            }
         
         # Get current conditions
         url = f"{BASE_URL}/currentconditions/v1/{location_key}"
@@ -161,31 +172,56 @@ def get_weather_accuweather(city: str, language: str = 'en') -> Tuple[bool, str]
         
         data = response.json()
         if not data or not isinstance(data, list):
-            return False, "Invalid response from AccuWeather"
+            return False, {
+                'error': 'Invalid response from AccuWeather',
+                'type': 'api_error'
+            }
             
         current = data[0]
-        weather_text = current.get('WeatherText', 'Unknown')
-        temperature = current.get('Temperature', {}).get('Metric', {}).get('Value', 'Unknown')
-        humidity = current.get('RelativeHumidity', 'Unknown')
-        wind_speed = current.get('Wind', {}).get('Speed', {}).get('Metric', {}).get('Value', 'Unknown')
+        weather_data = {
+            'city': city,
+            'source': 'AccuWeather',
+            'condition': current.get('WeatherText', 'Unknown'),
+            'temperature': current.get('Temperature', {}).get('Metric', {}).get('Value'),
+            'real_feel': current.get('RealFeelTemperature', {}).get('Metric', {}).get('Value'),
+            'humidity': current.get('RelativeHumidity'),
+            'wind': current.get('Wind', {}).get('Speed', {}).get('Metric', {}).get('Value'),
+            'wind_unit': 'km/h',
+            'wind_direction': current.get('Wind', {}).get('Direction', {}).get('Localized'),
+            'uv_index': current.get('UVIndex'),
+            'visibility': current.get('Visibility', {}).get('Metric', {}).get('Value'),
+            'pressure': current.get('Pressure', {}).get('Metric', {}).get('Value'),
+            'precipitation': current.get('Precip1hr', {}).get('Metric', {}).get('Value')
+        }
         
-        result = (
-            f"Weather in {city} (AccuWeather):\n"
-            f"- Condition: {weather_text}\n"
-            f"- Temperature: {temperature}°C\n"
-            f"- Humidity: {humidity}%\n"
-            f"- Wind Speed: {wind_speed} km/h"
-        )
-        return True, result
+        # Clean up None values
+        weather_data = {k: v for k, v in weather_data.items() if v is not None}
+        return True, weather_data
         
+    except requests.exceptions.RequestException as e:
+        return False, {
+            'error': f'Network error: {str(e)}',
+            'type': 'network_error'
+        }
     except Exception as e:
-        return False, f"AccuWeather error: {str(e)}"
+        return False, {
+            'error': f'AccuWeather error: {str(e)}',
+            'type': 'api_error'
+        }
 
-def get_weather_openweather(city: str, language: str = 'en') -> Tuple[bool, str]:
-    """Get weather from OpenWeatherMap API."""
+def get_weather_openweather(city: str, language: str = 'en') -> Tuple[bool, dict]:
+    """
+    Get weather from OpenWeatherMap API.
+    
+    Returns:
+        tuple: (success: bool, result: dict) where result contains weather data or error message
+    """
     try:
         if not OPENWEATHER_API_KEY:
-            return False, "OpenWeatherMap API key not configured"
+            return False, {
+                'error': 'OpenWeatherMap API key not configured',
+                'type': 'config_error'
+            }
             
         # Search for the city
         observation = mgr.weather_at_place(city)
@@ -193,20 +229,55 @@ def get_weather_openweather(city: str, language: str = 'en') -> Tuple[bool, str]
         
         # Get temperature in Celsius
         temp = weather.temperature('celsius')
+        wind = weather.wind()
         
-        result = (
-            f"Weather in {city} (OpenWeatherMap):\n"
-            f"- Condition: {weather.detailed_status.capitalize()}\n"
-            f"- Temperature: {temp['temp']}°C (Feels like: {temp['feels_like']}°C)\n"
-            f"- Humidity: {weather.humidity}%\n"
-            f"- Wind Speed: {weather.wind()['speed']} m/s"
-        )
-        return True, result
+        weather_data = {
+            'city': city,
+            'source': 'OpenWeatherMap',
+            'condition': weather.detailed_status.capitalize(),
+            'temperature': temp.get('temp'),
+            'temp_min': temp.get('temp_min'),
+            'temp_max': temp.get('temp_max'),
+            'real_feel': temp.get('feels_like'),
+            'humidity': weather.humidity,
+            'pressure': weather.pressure.get('press'),
+            'wind': wind.get('speed'),
+            'wind_unit': 'm/s',
+            'wind_direction': wind.get('deg'),
+            'clouds': weather.clouds,
+            'rain': weather.rain,
+            'snow': weather.snow,
+            'sunrise': weather.sunrise_time('iso'),
+            'sunset': weather.sunset_time('iso'),
+            'reference_time': weather.reference_time('iso')
+        }
         
+        # Clean up None values
+        weather_data = {k: v for k, v in weather_data.items() if v is not None}
+        return True, weather_data
+        
+    except pyowm.commons.exceptions.NotFoundError:
+        return False, {
+            'error': f'Location not found: {city}',
+            'type': 'location_error'
+        }
+    except pyowm.commons.exceptions.UnauthorizedError:
+        return False, {
+            'error': 'Invalid OpenWeatherMap API key',
+            'type': 'auth_error'
+        }
+    except requests.exceptions.RequestException as e:
+        return False, {
+            'error': f'Network error: {str(e)}',
+            'type': 'network_error'
+        }
     except Exception as e:
-        return False, f"OpenWeatherMap error: {str(e)}"
+        return False, {
+            'error': f'OpenWeatherMap error: {str(e)}',
+            'type': 'api_error'
+        }
 
-def get_weather(city_input: str, language: str = 'en') -> str:
+def get_weather(city_input: str, language: str = 'en') -> dict:
     """
     Get current weather for a city, with fallback to OpenWeatherMap if AccuWeather fails.
     
@@ -215,7 +286,7 @@ def get_weather(city_input: str, language: str = 'en') -> str:
         language: Language for the response (default: 'en')
         
     Returns:
-        str: Formatted weather information or error message
+        dict: Dictionary containing weather data or error information
     """
     try:
         # Clean the city input
@@ -234,31 +305,48 @@ def get_weather(city_input: str, language: str = 'en') -> str:
                 break
                 
         # Remove any remaining quotes and extra spaces
-        city = city.strip('\"\'').strip()
+        city = city.strip('\'"').strip()
         
         if not city:
-            return "Please provide a city name."
+            return {'error': 'Please provide a city name.', 'type': 'validation_error'}
             
         print(f"[get_weather] Processing city: '{city}'")
         
         # Try AccuWeather first
         success, result = get_weather_accuweather(city, language)
         if success:
+            print(f"[get_weather] Successfully got data from AccuWeather")
             return result
             
-        print(f"[get_weather] AccuWeather failed: {result}")
+        print(f"[get_weather] AccuWeather failed: {result.get('error', 'Unknown error')}")
         print("[get_weather] Trying OpenWeatherMap...")
         
         # Fall back to OpenWeatherMap
         success, result = get_weather_openweather(city, language)
         if success:
+            print(f"[get_weather] Successfully got data from OpenWeatherMap")
             return result
             
-        print(f"[get_weather] OpenWeatherMap failed: {result}")
-        return "Could not retrieve weather information. Both services failed."
+        print(f"[get_weather] OpenWeatherMap failed: {result.get('error', 'Unknown error')}")
+        return {
+            'error': 'Could not retrieve weather information. Both services failed.',
+            'type': 'service_unavailable',
+            'details': {
+                'accuweather_error': result.get('error', 'Unknown error'),
+                'openweather_error': result.get('error', 'Unknown error')
+            }
+        }
         
     except Exception as e:
-        return f"An unexpected error occurred: {str(e)}"
+        error_msg = f"An unexpected error occurred: {str(e)}"
+        print(f"[get_weather] {error_msg}")
+        return {
+            'error': error_msg,
+            'type': 'unexpected_error'
+        }
+        
+    except Exception as e:
+        return {'error': f"An unexpected error occurred: {str(e)}"}
 
 def recommend_activity(weather: str, target_language: str = 'en-us') -> str:
     """

@@ -65,6 +65,14 @@
                         <i class="fas fa-wind"></i> Wind: <span id="wind">-- km/h</span>
                     </div>
                 </div>
+                
+                <!-- Recommendations Section -->
+                <div class="mt-4 pt-3 border-top">
+                    <h4 class="text-center mb-3"><i class="fas fa-lightbulb me-2"></i>Recommended Activities</h4>
+                    <div id="recommendations" class="text-center">
+                        <p class="text-muted">Search for a city to see recommendations</p>
+                    </div>
+                </div>
             </div>
             
             <div id="errorMessage" class="alert alert-danger mt-3" style="display: none;"></div>
@@ -72,89 +80,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchBtn = document.getElementById('searchBtn');
-            const cityInput = document.getElementById('cityInput');
-            const weatherInfo = document.getElementById('weatherInfo');
-            const errorMessage = document.getElementById('errorMessage');
-            
-            // Function to update weather display
-            function updateWeatherDisplay(data) {
-                document.getElementById('cityName').textContent = data.city;
-                document.getElementById('temperature').textContent = `${data.temperature}°C`;
-                document.getElementById('condition').textContent = data.condition;
-                document.getElementById('feelsLike').textContent = `${data.real_feel}°C`;
-                document.getElementById('humidity').textContent = `${data.humidity}%`;
-                document.getElementById('wind').textContent = `${data.wind} ${data.wind_unit || 'km/h'}`;
-                
-                // Update weather icon based on condition (simplified)
-                const icon = document.getElementById('weatherIcon');
-                const condition = data.condition.toLowerCase();
-                
-                if (condition.includes('sun') || condition.includes('clear')) {
-                    icon.className = 'fas fa-sun';
-                } else if (condition.includes('cloud')) {
-                    icon.className = 'fas fa-cloud';
-                } else if (condition.includes('rain')) {
-                    icon.className = 'fas fa-cloud-rain';
-                } else if (condition.includes('snow')) {
-                    icon.className = 'far fa-snowflake';
-                } else {
-                    icon.className = 'fas fa-cloud-sun';
-                }
-                
-                weatherInfo.style.display = 'block';
-                errorMessage.style.display = 'none';
-            }
-            
-            // Handle search button click
-            searchBtn.addEventListener('click', function() {
-                const city = cityInput.value.trim();
-                if (!city) {
-                    showError('Please enter a city name');
-                    return;
-                }
-                
-                fetchWeather(city);
-            });
-            
-            // Handle Enter key in input field
-            cityInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchBtn.click();
-                }
-            });
-            
-            // Function to fetch weather data
-            function fetchWeather(city) {
-                const formData = new FormData();
-                formData.append('city', city);
-                
-                fetch('/get_weather', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
-                    updateWeatherDisplay(data);
-                })
-                .catch(error => {
-                    showError(error.message || 'Failed to fetch weather data');
-                    console.error('Error:', error);
-                });
-            }
-            
-            // Function to show error message
-            function showError(message) {
-                errorMessage.textContent = message;
-                errorMessage.style.display = 'block';
-                weatherInfo.style.display = 'none';
-            }
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
