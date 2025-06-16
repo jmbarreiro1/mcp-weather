@@ -1,18 +1,22 @@
 # Weather Application with Web Interface
 
-A simple weather application that provides current weather information for any city using the AccuWeather API.
+A robust weather application that retrieves current weather information using multiple weather APIs with automatic fallback.
 
 ## Features
 
 - Get current weather conditions for any city
-- Responsive web interface
-- Real-time weather updates
+- Automatic fallback between AccuWeather and OpenWeatherMap APIs
+- Web interface with a clean, responsive design
+- Command-line interface available
+- Supports multiple languages
+- Handles multi-word city names and common prefixes
 - Displays temperature, feels-like temperature, humidity, and wind speed
 
 ## Prerequisites
 
-- Python 3.8 or higher
-- AccuWeather API key (get it from https://developer.accuweather.com/)
+- Python 3.8+
+- AccuWeather API key (get one from [AccuWeather Developer Portal](https://developer.accuweather.com/))
+- OpenWeatherMap API key (get one from [OpenWeatherMap](https://openweathermap.org/api))
 
 ## Installation
 
@@ -33,10 +37,14 @@ A simple weather application that provides current weather information for any c
    pip install -r requirements.txt
    ```
 
-4. Create a `.env` file in the root directory and add your AccuWeather API key:
+4. Create a `.env` file in the root directory and add your API keys:
    ```
-   ACCUWEATHER_API_KEY=your_api_key_here
+   # Required: At least one API key is required
+   ACCUWEATHER_API_KEY=your_accuweather_api_key_here
+   OPENWEATHER_API_KEY=your_openweather_api_key_here
    ```
+   
+   Note: The application will work with just one API key, but having both provides better reliability.
 
 ## Running the Application
 
@@ -52,12 +60,29 @@ A simple weather application that provides current weather information for any c
    ```
 
 3. Enter a city name in the search box and click "Search" to see the current weather.
+   - The results will show which weather service was used
+   - The system automatically falls back to the other service if one fails
 
 ### Command Line Interface
 You can also use the command line interface:
 ```bash
 python main.py
 ```
+
+## How It Works
+
+1. The application first tries to get weather data from AccuWeather
+2. If AccuWeather fails or isn't configured, it automatically falls back to OpenWeatherMap
+3. For certain cities (like "Vilagarcia de Arousa"), a manual mapping is used for better accuracy
+4. The web interface shows which service provided the weather data
+
+## Troubleshooting
+
+- If you get "Could not retrieve weather information", check:
+  - Your internet connection
+  - API keys in the `.env` file
+  - API service status (both AccuWeather and OpenWeatherMap)
+  - The console output for detailed error messages
 
 ## Usage
 
