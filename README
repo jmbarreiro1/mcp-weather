@@ -2,4 +2,13 @@ This is a test to learn how to create a mcp server.
 
 To use this, you need to use llama3.
 
+You need to have an api key for accuweather and a .env file with the following variables:
+
+ACCUWEATHER_API_KEY
+
+You can get an api key for accuweather at https://developer.accuweather.com/ 
+
+To run the server, you need to run the following command:
+
+python main.py
 
